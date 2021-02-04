@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.5.1/jquery.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.10.0/dist/sweetalert2.all.min.js"></script>
+    <script type="text/javascript">
+
+        let websocketServerUrl = 'wss://ip:port/watchTogether/connection/my-secret-key/nfe';
+        let ws;
+
+        (function () {
+            ws = new WebSocket(websocketServerUrl);
+            ws.onmessage = function (msg) {
+                let result = JSON.parse(msg.data)
+                if (result['messageType'] === 'MSG') {
+                    alert('【H5视频播放进度同步插件】' + result['message']);
+                } else if (result['messageType'] === 'ACTION') {
+                    console.log("返回消息: " + JSON.stringify(result));
+                }
+            }
+
+            ws.onopen = function () {
+                console.log("websocket 连接成功");
+            };
+
+            ws.onclose = function (e) {
+                console.log('websocket 断开连接: ' + e.code + ' ' + e.reason + ' ' + e.wasClean)
+                console.log(e)
+            }
+        })();
+
+        function sendMessage(type, currentTime) {
+            ws.send(JSON.stringify({
+                messageType: 'ACTION',
+                actionType: type,
+                videoTime: currentTime
+            }));
+        }
+    </script>
+</head>
+<body>
+<button onclick="sendMessage('PLAY', null)">播放</button>
+<button onclick="sendMessage('PAUSE', null)">暂停</button>
+<button onclick="sendMessage('SEEKED', 60)">拖动</button>
+</body>
+</html>
